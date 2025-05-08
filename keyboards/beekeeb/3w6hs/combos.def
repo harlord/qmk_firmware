@@ -1,0 +1,48 @@
+#include "layers.h"
+
+//thumbs combos
+COMB(C_FUNC,   MO(_FUNC), TH_LOWER, TH_RAISE)
+COMB(C_ADJUST,   MO(_ADJUST), HR_LS_BK, TH_LOWER)
+COMB(C_HOMEROW,   MO(_HOMEROW), HR_LC_SP, TH_RAISE)
+
+//low symbols
+COMB(C_HR_AZ,   KC_BSLS,   KC_A, KC_Z)
+COMB(C_HR_RX,   KC_LBRC,   KC_R, KC_X)
+COMB(C_HR_SC,   KC_RBRC,   KC_S, KC_C)
+COMB(C_HR_TD,   KC_GRAVE,   KC_T, KC_D)
+COMB(C_HR_GV,   KC_MINS,   KC_G, KC_V)
+COMB(C_HR_MK,   KC_EQL,   KC_M, KC_K)
+COMB(C_HR_NH,   KC_SCLN,   KC_N, KC_H)
+COMB(C_HR_ECOMM,   KC_COMM,   KC_E, KC_COMM)
+COMB(C_HR_IDOT,   KC_DOT,   KC_I, KC_DOT)
+COMB(C_HR_OSLSH,   KC_SLSH,   KC_O, MO(_NAVALPHA))
+
+//actions
+COMB(C_HR_DV,   KC_DEL,   KC_Z, KC_X, KC_C)
+COMB(C_HR_XC,   KC_BSPC,  KC_X, KC_C, KC_D)
+COMB(C_HR_CD,   KC_TAB,   KC_D, KC_V)
+
+COMB(C_HR_FP,   KC_ESC,   KC_Q, KC_W, KC_F)
+COMB(C_HR_WF,   KC_SPC,   KC_W, KC_F, KC_P)
+COMB(C_HR_PB,   KC_ENT,   KC_P, KC_B)
+
+//numbers
+COMB(C_HR_AQ,   KC_1,   KC_A, KC_Q)
+COMB(C_HR_RW,   KC_2,   KC_R, KC_W)
+COMB(C_HR_SF,   KC_3,   KC_S, KC_F)
+COMB(C_HR_TP,   KC_4,   KC_T, KC_P)
+COMB(C_HR_GB,   KC_5,   KC_G, KC_B)
+COMB(C_HR_MJ,   KC_6,   KC_M, KC_J)
+COMB(C_HR_NL,   KC_7,   KC_N, KC_L)
+COMB(C_HR_EU,   KC_8,   KC_E, KC_U)
+COMB(C_HR_IY,   KC_9,   KC_I, KC_Y)
+COMB(C_HR_OQUOT,   KC_0,   KC_O, KC_QUOT)
+
+//navigation
+COMB(C_HR_HCOMM,   KC_HOME,   KC_H, KC_COMM)
+COMB(C_HR_HE,     KC_PGUP,   KC_H, KC_E)
+COMB(C_HR_EDOT,     KC_PGDN,   KC_E, KC_DOT)
+COMB(C_HR_COMMDOT,   KC_END,    KC_COMM, KC_DOT)
+
+
+
