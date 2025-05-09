@@ -19,6 +19,7 @@ enum layers {
     _TILDESHIFTO,
     _TILDESHIFTU,
     _TILDESHIFTENNE,
+    _NUMBERS,
 };
 
 #endif // LAYERS_H

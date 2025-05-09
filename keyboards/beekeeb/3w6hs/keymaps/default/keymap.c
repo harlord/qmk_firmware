@@ -27,6 +27,8 @@
  qmk console
  qmk monitor
  qmk clean
+ 
+ 
  */
 
 #include QMK_KEYBOARD_H
@@ -60,6 +62,12 @@
 
 #define RLO_UP KC_UP
 #define RLO_8 KC_8
+
+
+#define DOUBLE_CLICK_KEY LALT_T(KC_ESC)  // The key to watch for double-clicks
+#define DOUBLE_CLICK_TIMEOUT 200  // Max time between clicks (ms)
+static uint16_t last_click_timer = 0;
+static bool awaiting_second_click = false;
 
 enum custom_keycodes {
     TILDE_A = SAFE_RANGE,
@@ -123,6 +131,24 @@ bool process_tap_hold(uint16_t keycode, keyrecord_t *record) {
     }
     return true;  // Skip further processing
 }
+
+//bool handleDoubleClickEsc(uint16_t keycode, keyrecord_t *record) {
+//    if (record->event.pressed) {
+//        uint16_t now = timer_read();
+//
+//        if (awaiting_second_click && timer_elapsed(last_click_timer) < DOUBLE_CLICK_TIMEOUT) {
+//            // Double click detected
+//            awaiting_second_click = false;
+//            tap_code(KC_ESC);  // Replace this with the action on double-click
+//            return true;    // Skip normal processing
+//        } else {
+//            // First click
+//            awaiting_second_click = true;
+//            last_click_timer = now;
+//        }
+//    }
+//    return false;
+//}
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     uprintf("process_record_user Keycode: %d, Pressed: %d\n", keycode, record->event.pressed);
@@ -334,8 +360,36 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             // On tap, continue default handling to act as KC_.
             return true;
             
+            //        case DOUBLE_CLICK_KEY:
+            //            uprintf("DOUBLE_CLICK_KEY DOUBLE_CLICK_KEY first\n");
+            //            // Handle double click for Escape
+            //            if (handleDoubleClickEsc(keycode, record)) {
+            //                return false;
+            //            }
+            //            return true;
+            
         case HR_LA_ES: // Custom keycode
             uprintf("HR_LA_ES HR_LA_ES first\n");
+            // Handle double click for Escape
+            //            if (handleDoubleClickEsc(keycode, record)) {
+            //                return false;
+            //            }
+            
+            if (record->event.pressed) {
+                uint16_t now = timer_read();
+                
+                if (awaiting_second_click && timer_elapsed(last_click_timer) < DOUBLE_CLICK_TIMEOUT) {
+                    // Double click detected
+                    awaiting_second_click = false;
+                    tap_code(KC_ESC);  // Replace this with the action on double-click
+                    return false;    // Skip normal processing
+                } else {
+                    // First click
+                    awaiting_second_click = true;
+                    last_click_timer = now;
+                }
+            }
+            
             if (record->tap.count == 0) {
                 uprintf("HR_LA_ES record->tap.count == 0\n");        // On hold.
                 if (record->event.pressed) {
@@ -356,12 +410,19 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             
             else if (record->tap.count > 0) { // Detect tap behavior
                 if (record->event.pressed) {
-                    uprintf("HR_LA_ES: Tap down (activating _TILDE for one-shot)\n");
+                    uprintf("HR_LA_ES: Tap down (activating _NUMBERS for one-shot)\n");
                     IS_TAP_HR_LA_ES = true;
-                    ////layer_on(_TILDE); // Activate the _TILDE layer
+                    
+                    
+                    if (layer_state_is(_NUMBERS)) {
+                        layer_off(_NUMBERS);
+                    } else {
+                        layer_on(_NUMBERS); // Activate the _NUMBERS layer
+                    }
+                    
                     // Handle tap down logic here (e.g., activate layer or perform action)
                 } else {
-                    uprintf("HR_LA_ES: Tap up (deactivating _TILDE one-shot)\n");
+                    uprintf("HR_LA_ES: Tap up (deactivating _NUMBERS one-shot)\n");
                     IS_TAP_HR_LA_ES = false;
                     // Handle tap up logic here (e.g., deactivate layer or finalize action)
                 }
@@ -388,6 +449,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case RRA_QUES:
             return process_tap_hold(KC_QUES, record);
     }
+    
+    //    if (layer_state_is(_NUMBERS)) {
+    //        layer_off(_NUMBERS);
+    //    }
     
     return true;
 }
@@ -441,7 +506,7 @@ bool combo_should_trigger(uint16_t combo_index, combo_t *combo, uint16_t keycode
                 layer_state_cmp(layer_state | default_layer_state, _RAISE) ||
                 layer_state_cmp(layer_state | default_layer_state, _LOWER) ||
                 layer_state_cmp(layer_state | default_layer_state, _HOMEROW)||
-                //layer_state_cmp(layer_state | default_layer_state, _TILDE) ||
+                layer_state_cmp(layer_state | default_layer_state, _NUMBERS) ||
                 layer_state_cmp(layer_state | default_layer_state, _FUNC)
                 ){
                     return true;
@@ -528,41 +593,42 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
 uint16_t get_quick_tap_term(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case HR_LS_BK:
-            if (layer_state_cmp(layer_state | default_layer_state, _ALPHA_COLEMAK_DH)) {
-                return 40;
+            if (layer_state_is(_ALPHA_COLEMAK_DH)) {
+                return 1;
             }
             break;
         case HR_LG_DE:
-            if (layer_state_cmp(layer_state | default_layer_state, _ALPHA_COLEMAK_DH) ){
-                return 40;
+            if (layer_state_is(_ALPHA_COLEMAK_DH)) {
+                return 1;
             }
             break;
         case HR_LC_SP:
-            if (layer_state_cmp(layer_state | default_layer_state, _ALPHA_COLEMAK_DH)) {
-                return 40;
+            if (layer_state_is(_ALPHA_COLEMAK_DH)) {
+                return 1;
             }
             break;
         case HR_LA_ES:
-            if (layer_state_cmp(layer_state | default_layer_state, _ALPHA_COLEMAK_DH)) {
-                return 40;
+            if (layer_state_is(_ALPHA_COLEMAK_DH)) {
+                return 1;
             }
             break;
         case KC_ESC:
             return 1;
         case TH_LOWER:
-            if (layer_state_cmp(layer_state | default_layer_state, _ALPHA_COLEMAK_DH)) {
-                return 40;
+            if (layer_state_is(_ALPHA_COLEMAK_DH)) {
+                return 1;
             }
             break;
         case TH_RAISE:
-            if (layer_state_cmp(layer_state | default_layer_state, _ALPHA_COLEMAK_DH)) {
-                return 40;
+            if (layer_state_is(_ALPHA_COLEMAK_DH)) {
+                return 1;
             }
             break;
         default:
             return 200;
             
     }
+    
     return 200;
 }
 
@@ -606,23 +672,6 @@ bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
             return false;
     }
 }
-
-//[_TILDE] = LAYOUT_split_3x5_3
-//(
-// LALT(KC_1), LALT(KC_W), LALT(KC_F), LALT(KC_P), LALT(KC_B),                  LALT(KC_J), LALT(KC_L), TILDE_U,       LALT(KC_Y),   LALT(KC_QUOT),
-// TILDE_A,    LALT(KC_R), LALT(KC_S), LALT(KC_T), LALT(KC_G),                  LALT(KC_M), TILDE_NN,   TILDE_E,       TILDE_I,      TILDE_O,
-// LALT(KC_Z), LALT(KC_X), LALT(KC_C), LALT(KC_D), LALT(KC_V),                  LALT(KC_K), LALT(KC_H), LALT(KC_COMM), LALT(KC_DOT), LSFT(LALT(KC_SLSH)),
-//            LGUI_T(KC_DEL), LSFT_T(KC_BSPC), TH_LOWER,     TH_RAISE, LCTL_T(KC_SPC), KC_ESC
-// ),
-
-
-//[_TILDE] = LAYOUT_split_3x5_3
-//(
-// LALT(KC_1),   KC_W,    KC_F,    KC_P, KC_B,                                          KC_J,    KC_L,     TILDE_U,    KC_Y,    KC_QUOT,
-// TILDE_A,      KC_R,    KC_S,    KC_T, KC_G,                                          KC_M,    TILDE_NN, TILDE_E,    TILDE_I, TILDE_O,
-// KC_Z,         KC_X,    KC_C,    KC_D, KC_V,                                          KC_K,    KC_H,     KC_COMM,    KC_DOT,  LSFT(LALT(KC_SLSH)),
-//            LGUI_T(KC_DEL), LSFT_T(KC_BSPC), TH_LOWER,     TH_RAISE, LCTL_T(KC_SPC), KC_ESC
-// ),
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_ALPHA_COLEMAK_DH] = LAYOUT_split_3x5_3
@@ -745,6 +794,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      KC_TRNS,   KC_TRNS,    KC_TRNS,    KC_TRNS, KC_TRNS,                                          KC_TRNS,    KC_TRNS,     KC_TRNS,    KC_TRNS,    KC_TRNS,
      KC_TRNS,   KC_TRNS,    KC_TRNS,    KC_TRNS, KC_TRNS,                                          KC_TRNS,    KC_TRNS,     KC_TRNS,    KC_TRNS,    KC_TRNS,
      KC_TRNS, TILDE_NN, KC_TRNS,     KC_TRNS, KC_TRNS, KC_TRNS
+     ),
+    
+    [_NUMBERS] = LAYOUT_split_3x5_3
+    (
+     KC_EXLM, KC_AT,   KC_HASH, KC_DLR, KC_PERC,                                           KC_MINUS,    KC_7,    KC_8,    KC_9,    KC_ASTR,
+     KC_RSFT, KC_RCTL, KC_LALT, KC_LGUI,KC_COMM,                                           KC_DOT,      KC_4,    KC_5,    KC_6,    KC_0,
+     KC_BSLS, KC_LBRC, KC_RBRC, KC_GRV, KC_MINUS,                                          KC_PPLS,     KC_1,    KC_2,    KC_3,    KC_SLSH,
+     HR_LG_DE, HR_LS_BK, TH_LOWER,                     TH_RAISE, HR_LC_SP, HR_LA_ES
      ),
     
 };
